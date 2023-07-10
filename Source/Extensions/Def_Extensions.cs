@@ -121,5 +121,10 @@ namespace ResearchPowl
             
             return texture2D;
         }
-    }
+
+		public static void DrawColouredIcon(this Def def, Rect canvas) {
+			FastGUI.DrawTextureFast(canvas, def.IconTexture(), Assets.colorWhite);
+			GUI.color = Assets.colorWhite;
+		}
+	}
 }

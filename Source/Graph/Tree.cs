@@ -332,7 +332,7 @@ namespace ResearchPowl
 				for (int i = projects.Count; i-- > 0;)
 				{
 					var project = projects[i];
-					if ((project.prerequisites != null && project.prerequisites.Contains(project)) || 
+					if ((project.prerequisites != null && project.prerequisites.Contains(project)) || project.techLevel == TechLevel.Undefined ||
 						(Settings.dontShowUnallowedTech && (int)project.techLevel > Settings.maxAllowedTechLvl)) hidden.Add(project);
 				}
 

@@ -26,7 +26,6 @@ namespace ResearchPowl
 		List<Def> _unlocks;
 		Painter _currentPainter;
 		HighlightReasonSet _highlightReasons = new HighlightReasonSet();
-		public static readonly Dictionary<Def, List<Def>> _unlocksCache = new Dictionary<Def, List<Def>>();
 
 		public ResearchNode(ResearchProjectDef research)
 		{
@@ -41,56 +40,8 @@ namespace ResearchPowl
 		}
 		List<Def> Unlocks()
 		{
-			if (_unlocks == null) _unlocks = GetUnlockDefs(Research);
+			if (_unlocks == null) _unlocks = Research.GetUnlockDefs();
 			return _unlocks;
-
-			List<Def> GetUnlockDefs(ResearchProjectDef research)
-			{
-				if ( _unlocksCache.ContainsKey( research ) )
-					return _unlocksCache[research];
-
-				var unlocks = new List<Def>();
-
-				//Was GetThingsUnlocked()
-				var thingDefs = DefDatabase<ThingDef>.AllDefsListForReading;
-				var length = thingDefs.Count;
-				for (int i = 0; i < length; i++)
-				{
-					var def = thingDefs[i];
-					if (def.researchPrerequisites?.Contains(research) ?? false && def.IconTexture() != null) unlocks.Add(def);
-				}
-
-				//Was GetTerrainUnlocked()
-				var terrainDefs = DefDatabase<TerrainDef>.AllDefsListForReading;
-				length = terrainDefs.Count;
-				for (int i = 0; i < length; i++)
-				{
-					var def = terrainDefs[i];
-					if (def.researchPrerequisites?.Contains(research) ?? false && def.IconTexture() != null) unlocks.Add(def);
-				}
-
-				//Was GetRecipesUnlocked()
-				var recipeDefs = DefDatabase<RecipeDef>.AllDefsListForReading;
-				length = recipeDefs.Count;
-				for (int i = 0; i < length; i++)
-				{
-					var def = recipeDefs[i];
-					if ((def.researchPrerequisite == research || def.researchPrerequisites != null && def.researchPrerequisites.Contains(research)) && 
-						def.IconTexture() != null) unlocks.Add(def);
-				}
-
-				var plantDefs = DefDatabase<ThingDef>.AllDefsListForReading;
-				length = plantDefs.Count;
-				for (int i = 0; i < length; i++)
-				{
-					var def = plantDefs[i];
-					if (def.plant?.sowResearchPrerequisites?.Contains(research) ?? false && def.IconTexture() != null) unlocks.Add(def);
-				}
-
-				// get unlocks for all descendant research, and remove duplicates.
-				_unlocksCache.Add(research, unlocks);
-				return unlocks;
-			}
 		}
 		public override bool Highlighted()
 		{
@@ -201,9 +152,8 @@ namespace ResearchPowl
 			}
 			return 0;
 		}
-		string[] MissingFacilities(ResearchProjectDef research = null)
+		public static string[] MissingFacilities(ResearchProjectDef research)
 		{
-			if (research == null) research = Research;
 			// try get from cache
 			if ( _missingFacilitiesCache.TryGetValue( research, out string[] missing ) ) return missing;
 
@@ -317,7 +267,7 @@ namespace ResearchPowl
 			}
 			if (!hasFacilitiesCache || (Research.requiredResearchFacilities != null && Research.requiredResearchBuilding == null))
 			{
-				var facilityString = MissingFacilities();
+				var facilityString = ResearchNode.MissingFacilities(this.Research);
 				if (!facilityString.NullOrEmpty()) TooltipHandler.TipRegion(_rect, ResourceBank.String.MissingFacilities( string.Join(", ", facilityString)));
 			}
 			if (!CompatibilityHooks.PassCustomUnlockRequirements(Research))
